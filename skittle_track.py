@@ -1,5 +1,6 @@
 """Track colours on skittlebot. Show X and Y only"""
 import picamera
+import picamera.array
 
 import cv2
 import numpy as np

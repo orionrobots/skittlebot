@@ -1,4 +1,6 @@
 """Track colours on skittlebot. Show X and Y only"""
+import picamera
+
 import cv2
 import numpy as np
 
@@ -26,66 +28,72 @@ lh = 90
 uh = 120
 lv = 240
 hv = 255 
-while True:
-    ret, frame = device.read()
 
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+with picamera.PiCamera() as camera, \
+        picamera.array.PiRGBArray(camera) as stream:
+    camera.shutter_speed = 20000
+    camera.vflip = True
 
-    lower_range = np.array([lh, 0, lv], np.uint8)
-    upper_range = np.array([uh, 255, hv], np.uint8)
+    while True:
+        camera.capture(stream, 'bgr')
+        frame = stream.array
 
-    # Create a mask around that colour
-    inrange = cv2.inRange(hsv, lower_range, upper_range)
+        # ret, frame = device.read()
+
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        lower_range = np.array([lh, 0, lv], np.uint8)
+        upper_range = np.array([uh, 255, hv], np.uint8)
+
+        # Create a mask around that colour
+        inrange = cv2.inRange(hsv, lower_range, upper_range)
 
 
-    kernel = np.ones((5,5),np.uint8)
-    mask = cv2.morphologyEx(inrange, cv2.MORPH_OPEN, kernel)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        kernel = np.ones((5,5),np.uint8)
+        mask = cv2.morphologyEx(inrange, cv2.MORPH_OPEN, kernel)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
-    # find contours in the mask and initialize the current
-    # (x, y) center of the object
-    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
-    center = None
+        # find contours in the mask and initialize the current
+        # (x, y) center of the object
+        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
+        center = None
 
-    
-    if len(cnts) >0:
-        center, radius, (x, y) = compute_contours(cnts)
-        if radius > 5:
-            cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
-            cv2.circle(frame, center, 3, (0, 0, 255), -1)
-            cv2.putText(frame,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
-            cv2.putText(frame,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
-            _, w, _ = frame.shape
-            hw = w / 2
-            if x > hw + 10:
-                print("Driving right", x, y)
-            elif x < hw - 10:
-                print("Driving left", x, y)
-            else:
-                print("Ramming speed!!!", x, y)
+        
+        if len(cnts) >0:
+            center, radius, (x, y) = compute_contours(cnts)
+            if radius > 5:
+                cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
+                cv2.circle(frame, center, 3, (0, 0, 255), -1)
+                cv2.putText(frame,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
+                cv2.putText(frame,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
+                _, w, _ = frame.shape
+                hw = w / 2
+                if x > hw + 10:
+                    print("Driving right", x, y)
+                elif x < hw - 10:
+                    print("Driving left", x, y)
+                else:
+                    print("Ramming speed!!!", x, y)
 
-    # cv2.imshow("Ranged", inrange)
-    # cv2.imshow("Frame", frame)
-    print lower_range, upper_range
-    k = cv2.waitKey(1)
-    if k == 27:
-        break
-    elif k == ord('a') and lh > 0:
-        lh -= 5
-    elif k == ord('s') and lh < 255:
-        lh += 5
-    elif k == ord('k') and uh > 0:
-        uh -= 5
-    elif k == ord('l') and uh < 255:
-        uh += 5
-    elif k == ord('n') and lv > 0:
-        lv -= 5
-    elif k == ord('m') and lv < 255:
-        lv += 5
-    elif k == ord('z') and hv > 0:
-        hv -= 5
-    elif k == ord('x') and hv > 255:
-        hv += 5
-
-device.release()
-# cv2.destroyAllWindows()
+        # cv2.imshow("Ranged", inrange)
+        # cv2.imshow("Frame", frame)
+        print lower_range, upper_range
+        k = cv2.waitKey(1)
+        if k == 27:
+            break
+        elif k == ord('a') and lh > 0:
+            lh -= 5
+        elif k == ord('s') and lh < 255:
+            lh += 5
+        elif k == ord('k') and uh > 0:
+            uh -= 5
+        elif k == ord('l') and uh < 255:
+            uh += 5
+        elif k == ord('n') and lv > 0:
+            lv -= 5
+        elif k == ord('m') and lv < 255:
+            lv += 5
+        elif k == ord('z') and hv > 0:
+            hv -= 5
+        elif k == ord('x') and hv > 255:
+            hv += 5

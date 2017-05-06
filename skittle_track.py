@@ -63,7 +63,6 @@ with robot.safe():
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
         center = None
 
-        
         if len(cnts) >0:
             center, radius, (x, y) = compute_contours(cnts)
             if radius > 5:

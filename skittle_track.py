@@ -74,13 +74,13 @@ with robot.safe():
                 hw = w / 2
                 if x > hw + 10:
                     print("Driving right", x, y)
-                    robot.spinRight()
+                    robot.spinRight(100)
                 elif x < hw - 10:
                     print("Driving left", x, y)
-                    robot.spinLeft()
+                    robot.spinLeft(100)
                 else:
                     print("Ramming speed!!!", x, y)
-                    robot.forward()
+                    robot.forward(100)
 
         cv2.imshow("Ranged", inrange)
         cv2.imshow("Frame", frame)

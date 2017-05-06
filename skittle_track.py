@@ -35,11 +35,8 @@ with picamera.PiCamera() as camera, \
     camera.shutter_speed = 20000
     camera.vflip = True
 
-    while True:
-        camera.capture(stream, 'bgr')
+    for frame in camera.capure_continuous(stream, format='bgr'):
         frame = stream.array
-
-        # ret, frame = device.read()
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 

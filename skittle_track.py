@@ -4,6 +4,7 @@ from picamera import PiCamera
 
 import cv2
 import numpy as np
+import time
 
 def compute_contours(cns):
     """Centroid stuff"""
@@ -25,7 +26,7 @@ def compute_contours(cns):
 # Lego thing: [90   0 240] [120 255 255]
 lh = 90
 uh = 120
-lv = 240
+lv = 220
 hv = 255 
 
 camera = PiCamera()
@@ -34,7 +35,9 @@ camera.resolution = (320, 240)
 camera.vflip = True
 stream = PiRGBArray(camera, size=(320, 240))
 
-for frame in camera.capure_continuous(stream, format='bgr', use_video_port=True):
+time.sleep(0.1)
+
+for frame in camera.capture_continuous(stream, format='bgr', use_video_port=True):
     frame = stream.array
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -73,7 +76,7 @@ for frame in camera.capure_continuous(stream, format='bgr', use_video_port=True)
                 print("Ramming speed!!!", x, y)
 
     cv2.imshow("Ranged", inrange)
-    # cv2.imshow("Frame", frame)
+    cv2.imshow("Frame", frame)
     print lower_range, upper_range
     k = cv2.waitKey(1)
     if k == 27:
@@ -94,3 +97,5 @@ for frame in camera.capure_continuous(stream, format='bgr', use_video_port=True)
         hv -= 5
     elif k == ord('x') and hv > 255:
         hv += 5
+    stream.truncate(0)
+

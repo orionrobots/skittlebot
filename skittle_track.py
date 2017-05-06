@@ -1,6 +1,6 @@
 """Track colours on skittlebot. Show X and Y only"""
-import picamera
-import picamera.array
+from picamera.array import PiRGBArray
+from picamera import PiCamera
 
 import cv2
 import numpy as np
@@ -28,10 +28,11 @@ uh = 120
 lv = 240
 hv = 255 
 
-camera = picamera.PiCamera()
+camera = PiCamera()
+camera.resolution = (320, 240)
 # camera.shutter_speed = 20000
 camera.vflip = True
-stream = picamera.array.PiRGBArray(camera)
+stream = PiRGBArray(camera, size=(320, 240))
 
 for frame in camera.capure_continuous(stream, format='bgr'):
     frame = stream.array

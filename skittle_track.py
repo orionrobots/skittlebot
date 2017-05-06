@@ -73,7 +73,7 @@ with picamera.PiCamera() as camera, \
                 else:
                     print("Ramming speed!!!", x, y)
 
-        # cv2.imshow("Ranged", inrange)
+        cv2.imshow("Ranged", inrange)
         # cv2.imshow("Frame", frame)
         print lower_range, upper_range
         k = cv2.waitKey(1)

@@ -34,7 +34,7 @@ camera.resolution = (320, 240)
 camera.vflip = True
 stream = PiRGBArray(camera, size=(320, 240))
 
-for frame in camera.capure_continuous(stream, format='bgr'):
+for frame in camera.capure_continuous(stream, format='bgr', use_video_port=True):
     frame = stream.array
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)

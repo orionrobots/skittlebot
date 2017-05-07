@@ -39,9 +39,7 @@ stream = PiRGBArray(camera, size=(320, 240))
 
 time.sleep(0.1)
 
-robot = Robot()
-
-with robot.safe():
+with Robot() as robot:
     for frame in camera.capture_continuous(stream, format='bgr', use_video_port=True):
         frame = stream.array
 

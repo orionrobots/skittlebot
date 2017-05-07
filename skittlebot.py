@@ -1,13 +1,20 @@
 from contextlib import contextmanager
 import gpiozero as gp
+import piconzero as pz
 
 class Robot(object):
     def __init__(self):
-        self.lm = gp.Motor(6, 13)
-        self.rm = gp.Motor(2, 3)
-        # self.pan = gp.AngularServo(12)
-        # self.tilt = gp.AngularServo(8)
+        pz.init()
+        self._pan = 0
+        self._tilt = 1
+        pz.setOutputConfig(self._pan, 2)
+        pz.setOutputConfig(self._tilt, 2)
 
+    def tilt(self, angle):
+        pz.setOutput(self._tilt, angle)
+
+    def pan(self, angle):
+        pz.setOutput(self._pan, angle)
 
     @contextmanager
     def safe(self):
@@ -16,23 +23,21 @@ class Robot(object):
         try:
             yield
         finally:
-            self.stop()
-
+            pz.stop()
 
     def forward(self, speed):
         """Both motors forward"""
-        self.lm.forward()
-        self.rm.forward()
+        pz.forward(speed)
 
-    def spinLeft(self, speed):
-        self.lm.stop()
-        self.rm.forward()
+    def left(self, speed):
+        pz.spinLeft(speed)
 
-    def spinRight(self, speed):
-        self.lm.forward()
-        self.rm.stop()
+    def right(self, speed):
+        pz.spinRight(speed)
+
+    def backward(self, speed):
+        pz.forward(-speed)
 
     def stop(self):
         """Both motors stop"""
-        self.lm.stop()
-        self.rm.stop()
+        pz.stop()

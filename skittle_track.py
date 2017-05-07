@@ -78,7 +78,9 @@ with Robot() as robot:
                     robot.spinLeft(100)
                 else:
                     print("Ramming speed!!!", x, y)
-                    robot.forward(100)
+                    robot.forward(60)
+        else:
+            robot.stop()
 
         cv2.imshow("Ranged", inrange)
         cv2.imshow("Frame", frame)

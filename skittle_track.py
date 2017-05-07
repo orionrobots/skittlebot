@@ -39,7 +39,11 @@ stream = PiRGBArray(camera, size=(320, 240))
 
 time.sleep(0.1)
 
+motors = False
+
 with Robot() as robot:
+    robot.pan(60)
+    robot.tilt(80)
     for frame in camera.capture_continuous(stream, format='bgr', use_video_port=True):
         frame = stream.array
 
@@ -72,13 +76,16 @@ with Robot() as robot:
                 hw = w / 2
                 if x > hw + 10:
                     print("Driving right", x, y)
-                    robot.spinRight(100)
+                    if motors:
+                        robot.spinRight(100)
                 elif x < hw - 10:
                     print("Driving left", x, y)
-                    robot.spinLeft(100)
+                    if motors:
+                        robot.spinLeft(100)
                 else:
                     print("Ramming speed!!!", x, y)
-                    robot.forward(60)
+                    if motors:
+                        robot.forward(60)
         else:
             robot.stop()
 
@@ -104,5 +111,9 @@ with Robot() as robot:
             hv -= 5
         elif k == ord('x') and hv > 255:
             hv += 5
+        elif k == ord('g'):
+            motors = not motors
+            if not motors:
+                robot.stop()
         stream.truncate(0)
 

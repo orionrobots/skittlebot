@@ -4,7 +4,7 @@ A robot to find a target and ram it.
 
 ## Demo
 
-See <iframe width="560" height="315" src="https://www.youtube.com/embed/z14HcflsRW0" frameborder="0" allowfullscreen="yes"></iframe>
+[![Skittlebot Video](https://img.youtube.com/vi/z14HcflsRW0/0.jpg)](https://www.youtube.com/watch?v=z14HcflsRW0)
 
 ## Starting point
 

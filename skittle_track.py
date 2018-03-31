@@ -1,6 +1,7 @@
 """Track colours on skittlebot. Show X and Y only"""
 from picamera.array import PiRGBArray
 from picamera import PiCamera
+from fractions import Fraction
 
 import cv2
 import numpy as np
@@ -26,24 +27,30 @@ def compute_contours(cns):
 # sv - right the way up to allow for illumination
 
 # Lego thing: [90   0 240] [120 255 255]
+# Low light butterfly or skittle
 lh = 90
-uh = 120
-lv = 220
-hv = 255 
+uh = 130
+lv = 25
+hv = 130
 
 camera = PiCamera()
 camera.resolution = (320, 240)
-# camera.shutter_speed = 20000
+time.sleep(2)
+camera.shutter_speed = camera.exposure_speed
+camera.exposure_mode = "off"
+gain = camera.awb_gains
+camera.awb_mode = "off"
+camera.awb_gains = gain
+
 camera.vflip = True
 stream = PiRGBArray(camera, size=(320, 240))
-
-time.sleep(0.1)
 
 motors = False
 
 with Robot() as robot:
-    robot.pan(60)
-    robot.tilt(80)
+    time.sleep(0.1)
+    robot.pan(90)
+    robot.tilt(60)
     for frame in camera.capture_continuous(stream, format='bgr', use_video_port=True):
         frame = stream.array
 
@@ -65,29 +72,37 @@ with Robot() as robot:
         cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
         center = None
 
-        if len(cnts) >0:
+        if len(cnts) > 0:
             center, radius, (x, y) = compute_contours(cnts)
-            if radius > 5:
+            if radius > 10:
                 cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
                 cv2.circle(frame, center, 3, (0, 0, 255), -1)
                 cv2.putText(frame,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
                 cv2.putText(frame,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
+                cv2.putText(frame,"r"+str(int(radius)), (center[0]+10,center[1]+30), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
                 _, w, _ = frame.shape
-                hw = w / 2
-                if x > hw + 10:
+                hw = 160
+                if x < hw - 45:
                     print("Driving right", x, y)
                     if motors:
-                        robot.spinRight(100)
-                elif x < hw - 10:
+                        robot.right(90)
+                        time.sleep(0.1)
+                        robot.stop()
+                elif x > hw + 45:
                     print("Driving left", x, y)
                     if motors:
-                        robot.spinLeft(100)
+                        robot.left(90)
+                        time.sleep(0.1)
+                        robot.stop()
                 else:
                     print("Ramming speed!!!", x, y)
                     if motors:
                         robot.forward(60)
+                        time.sleep(0.1)
+                        robot.stop()
         else:
-            robot.stop()
+            if motors:
+                robot.left(90)
 
         cv2.imshow("Ranged", inrange)
         cv2.imshow("Frame", frame)
@@ -103,13 +118,13 @@ with Robot() as robot:
             uh -= 5
         elif k == ord('l') and uh < 255:
             uh += 5
-        elif k == ord('n') and lv > 0:
+        elif k == ord('z') and lv > 0:
             lv -= 5
-        elif k == ord('m') and lv < 255:
+        elif k == ord('x') and lv < 255:
             lv += 5
-        elif k == ord('z') and hv > 0:
+        elif k == ord('n') and hv > 0:
             hv -= 5
-        elif k == ord('x') and hv > 255:
+        elif k == ord('m') and hv < 255:
             hv += 5
         elif k == ord('g'):
             motors = not motors

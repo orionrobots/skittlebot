@@ -21,8 +21,20 @@ def compute_contours(cns):
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
     return center, radius, (x, y)
 
+def setup_camera():
+    """SEt it up -warning - sleeps 2 seconds for camera to warm up"""
+    camera = PiCamera()
+    camera.resolution = (320, 240)
+    time.sleep(2)
+    camera.shutter_speed = camera.exposure_speed
+    camera.exposure_mode = "off"
+    gain = camera.awb_gains
+    camera.awb_mode = "off"
+    camera.awb_gains = gain
+    camera.vflip = True
+    return camera
+
 # illumination can be a problem due to colour value
-# hsv? yuv?- define range (try hsv later)
 
 # Colour range - hsv. H110-130 blueish.
 # sv - right the way up to allow for illumination
@@ -31,26 +43,20 @@ def compute_contours(cns):
 # Low light butterfly or skittle [90 10 240] [120 255 255]
 # Green skittle - [ 35 130  80] [ 95 255 255], [30 80 85] [ 95 255 255]
 
+# Hue
 lh = ControlledVariable(0, 255, 90,  (ord('a'), ord('s')))
 uh = ControlledVariable(0, 255, 120, (ord('k'), ord('l')))
+# Saturation
 ls = ControlledVariable(0, 255, 10,  (ord('q'), ord('w')))
 hs = ControlledVariable(0, 255, 255, (ord('o'), ord('p')))
+# Value
 lv = ControlledVariable(0, 255, 240, (ord('z'), ord('x')))
 hv = ControlledVariable(0, 255, 255, (ord('m'), ord('n')))
 
-camera = PiCamera()
-camera.resolution = (320, 240)
-time.sleep(2)
-camera.shutter_speed = camera.exposure_speed
-camera.exposure_mode = "off"
-gain = camera.awb_gains
-camera.awb_mode = "off"
-camera.awb_gains = gain
-
-camera.vflip = True
+camera = setup_camera()
 stream = PiRGBArray(camera, size=(320, 240))
 
-motors = False
+use_motors = False
 
 with Robot() as robot:
     time.sleep(0.1)
@@ -89,24 +95,24 @@ with Robot() as robot:
                 hw = 160
                 if x < hw - 45:
                     print("Driving right", x, y)
-                    if motors:
+                    if use_motors:
                         robot.right(90)
                         time.sleep(0.1)
                         robot.stop()
                 elif x > hw + 45:
                     print("Driving left", x, y)
-                    if motors:
+                    if use_motors:
                         robot.left(90)
                         time.sleep(0.1)
                         robot.stop()
                 else:
                     print("Ramming speed!!!", x, y)
-                    if motors:
+                    if use_motors:
                         robot.forward(60)
                         time.sleep(0.1)
                         robot.stop()
         else:
-            if motors:
+            if use_motors:
                 robot.left(90)
 
         cv2.imshow("Ranged", inrange)
@@ -122,8 +128,8 @@ with Robot() as robot:
         lv.handle_key(k)
         hv.handle_key(k)
         if k == ord('g'):
-            motors = not motors
-            if not motors:
+            use_motors = not use_motors
+            if not use_motors:
                 robot.stop()
         stream.truncate(0)
 
